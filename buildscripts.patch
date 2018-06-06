@@ -1,0 +1,22 @@
+diff --git a/patches/gcc-6.patch b/patches/gcc-6.patch
+index ab47d75..d0c6ab3 100644
+--- a/patches/gcc-6.patch
++++ b/patches/gcc-6.patch
+@@ -24,3 +24,17 @@ diff -ru a/src/gcc/gcc/gcc.c b/src/gcc/gcc/gcc.c
+  #endif
+  
+  /* When using -fsplit-stack we need to wrap pthread_create, in order
++diff -ru a/src/gcc/gcc/config/arm/arm.h b/src/gcc/gcc/config/arm/arm.h
++--- a/src/gcc/gcc/config/arm/arm.h     2018-01-08 19:42:50.166542000 +0100
+++++ b/src/gcc/gcc/config/arm/arm.h     2018-04-07 08:02:39.623554490 +0200
++@@ -29,6 +29,10 @@
++ #ifndef GCC_ARM_H
++ #define GCC_ARM_H
++ 
+++#ifndef NO_IMPLICIT_EXTERN_C
+++#define NO_IMPLICIT_EXTERN_C
+++#endif
+++
++ /* We can't use machine_mode inside a generator file because it
++    hasn't been created yet; we shouldn't be using any code that
++    needs the real definition though, so this ought to be safe.  */
