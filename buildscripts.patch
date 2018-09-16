@@ -1,8 +1,8 @@
 diff --git a/patches/gcc-6.patch b/patches/gcc-6.patch
-index ab47d75..d0c6ab3 100644
+index ab47d75..1f34628 100644
 --- a/patches/gcc-6.patch
 +++ b/patches/gcc-6.patch
-@@ -24,3 +24,17 @@ diff -ru a/src/gcc/gcc/gcc.c b/src/gcc/gcc/gcc.c
+@@ -24,3 +24,69 @@ diff -ru a/src/gcc/gcc/gcc.c b/src/gcc/gcc/gcc.c
   #endif
   
   /* When using -fsplit-stack we need to wrap pthread_create, in order
@@ -20,3 +20,55 @@ index ab47d75..d0c6ab3 100644
 + /* We can't use machine_mode inside a generator file because it
 +    hasn't been created yet; we shouldn't be using any code that
 +    needs the real definition though, so this ought to be safe.  */
++diff --git a/src/gcc/gcc/cp/decl2.c b/src/gcc/gcc/cp/decl2.c
++--- a/src/gcc/gcc/cp/decl2.c
+++++ b/src/gcc/gcc/cp/decl2.c
++@@ -1829,10 +1829,13 @@ vague_linkage_p (tree decl)
++ {
++   if (!TREE_PUBLIC (decl))
++     {
++-      /* maybe_thunk_body clears TREE_PUBLIC on the maybe-in-charge 'tor
++-	 variants, check one of the "clones" for the real linkage.  */
+++      /* maybe_thunk_body clears TREE_PUBLIC and DECL_ABSTRACT_P on the
+++	 maybe-in-charge 'tor variants; in that case we need to check one of
+++	 the "clones" for the real linkage.  But only in that case; before
+++	 maybe_clone_body we haven't yet copied the linkage to the clones.  */
++       if ((DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl)
++ 	   || DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl))
+++	  && !DECL_ABSTRACT_P (decl)
++ 	  && DECL_CHAIN (decl)
++ 	  && DECL_CLONED_FUNCTION (DECL_CHAIN (decl)))
++ 	return vague_linkage_p (DECL_CHAIN (decl));
++@@ -2310,11 +2313,8 @@ determine_visibility (tree decl)
++ 	    }
++ 
++ 	  /* Local classes in templates have CLASSTYPE_USE_TEMPLATE set,
++-	     but have no TEMPLATE_INFO.  Their containing template
++-	     function does, and the local class could be constrained
++-	     by that.  */
++-	  if (template_decl)
++-	    template_decl = fn;
+++	     but have no TEMPLATE_INFO, so don't try to check it.  */
+++	  template_decl = NULL_TREE;
++ 	}
++       else if (VAR_P (decl) && DECL_TINFO_P (decl)
++ 	       && flag_visibility_ms_compat)
++diff --git a/src/gcc/gcc/testsuite/g++.dg/ext/visibility/lambda1.C b/src/gcc/gcc/testsuite/g++.dg/ext/visibility/lambda1.C
++new file mode 100644
++--- /dev/null
+++++ b/src/gcc/gcc/testsuite/g++.dg/ext/visibility/lambda1.C
++@@ -0,0 +1,14 @@
+++// PR c++/85646
+++// { dg-do compile { target c++11 } }
+++// { dg-additional-options -fvisibility=hidden }
+++
+++template<typename T>
+++void foo() {
+++    struct inner {
+++        inner() {
+++            (void)([this] { });
+++        }
+++    };
+++}
+++
+++int main() { foo<int>(); }
