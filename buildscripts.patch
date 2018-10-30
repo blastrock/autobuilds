@@ -1,3 +1,22 @@
+diff --git a/patches/binutils.patch b/patches/binutils.patch
+index 6890b9e..f2d5971 100644
+--- a/patches/binutils.patch
++++ b/patches/binutils.patch
+@@ -11,3 +11,14 @@ diff -ru a/src/binutils/ld/scripttempl/elf.sc b/src/binutils/ld/scripttempl/elf.
+    /* Exception handling  */
+    .eh_frame     ${RELOCATING-0} : ONLY_IF_RW { KEEP (*(.eh_frame)) }
+    .gcc_except_table ${RELOCATING-0} : ONLY_IF_RW { *(.gcc_except_table .gcc_except_table.*) }
++diff -ru binutils-2.30.orig/bfd/elf32-arm.c binutils-2.30/bfd/elf32-arm.c
++--- binutils-2.30.orig/src/binutils/bfd/elf32-arm.c	2018-10-30 19:49:48.763958018 +0100
+++++ binutils-2.30/src/binutils/bfd/elf32-arm.c	2018-10-30 19:50:11.816216355 +0100
++@@ -12816,6 +12816,7 @@
++ 	  else
++ 	    unwind_type = 2;
++ 
+++          elide = 0;
++ 	  if (elide && !bfd_link_relocatable (info))
++ 	    {
++ 	      add_unwind_table_edit (&unwind_edit_head, &unwind_edit_tail,
 diff --git a/patches/gcc-6.patch b/patches/gcc-6.patch
 index ab47d75..1f34628 100644
 --- a/patches/gcc-6.patch

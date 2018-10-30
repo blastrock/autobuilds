@@ -25,6 +25,8 @@ script:
 # https://github.com/vitasdk/buildscripts/pull/51
 # and an issue with templates, static functions and lambdas
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=85646
+# and an issue with linking of exidx tables and their relocations
+# https://sourceware.org/bugzilla/show_bug.cgi?id=23839
 - patch --directory buildscripts -p1 < buildscripts.patch
 - chmod +x *.sh
 - "./build.sh"
